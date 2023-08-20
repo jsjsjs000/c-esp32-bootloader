@@ -1,0 +1,61 @@
+# Name,         Type, SubType,   Offset,   Size,    Flags
+# partition_table                0x8000,   0xc00,
+nvs,            data, nvs,       0x9000,   0x6000,
+phy_init,       data, phy,       0xf000,   0x1000,
+
+
+# for bootloader (704KB + 704KB)
+#factory,       app,  factory,   0x10000,  0xb0000,
+#firmware,      app,  ota_0,     0xc0000,  0xb0000,
+
+# for firmware (704KB)
+firmware,       app,  factory,   0xc0000,  0xb0000,
+
+
+data0,          data, undefined, 0x170000, 0x1000,
+#                                                            64KB
+data1,          data, undefined, 0x180000, 0x200000,
+#                                                            2MB
+data2,          data, undefined, 0x380000, 0x78000,
+#                                                            480KB = 120 * 4KB
+cfg_vis_compon, data, undefined, 0x3f8000, 0x2000,
+cfg_cu_control, data, undefined, 0x3fa000, 0x2000,
+cfg_program,    data, undefined, 0x3fc000, 0x2000,
+cfg_bootloader, data, undefined, 0x3fe000, 0x1000,
+cfg_boot_state, data, undefined, 0x3ff000, 0x1000,
+
+# set partitions_custom.csv in menuconfig
+
+# size of bootloader and firmware partitions have to be equal size
+
+# don't use filename 'partitions.csv'
+
+# Flash: 4MB - 0x400000
+
+# %USERPROFILE%\.platformio\packages\framework-espidf\components\partition_table\gen_esp32part.py
+# SUBTYPES = {
+#   APP_TYPE: {
+#       'factory': 0x00,
+#       'test': 0x20,
+#   },
+#   DATA_TYPE: {
+#       'ota': 0x00,
+#       'phy': 0x01,
+#       'nvs': 0x02,
+#       'coredump': 0x03,
+#       'nvs_keys': 0x04,
+#       'efuse': 0x05,
+#       'undefined': 0x06,
+#       'esphttpd': 0x80,
+#       'fat': 0x81,
+#       'spiffs': 0x82,
+#    },
+# }
+
+# Flash Encryption
+# https://docs.espressif.com/projects/esp-idf/en/v4.2/esp32/security/flash-encryption.html
+
+# old:
+#   cd %USERPROFILE%\.platformio\packages\framework-espidf\components\partition_table
+#   python gen_esp32part.py --verify partitions_custom.csv partitions_custom.bin
+#   copy partitions.bin to /.pio/build/az-delivery-devkit-v4/partitions_custom.bin
