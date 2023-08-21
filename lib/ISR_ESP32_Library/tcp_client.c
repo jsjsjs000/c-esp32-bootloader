@@ -14,7 +14,9 @@
 #include "lwip/sockets.h"
 #include "lwip/inet.h"
 #include "lwip/netdb.h"
-#include "../ISR_uC_Library/device_item.h"
+#include "device_item.h"
+// #include "flash.h"
+#include "history_state.h"
 
 // #define HOST "jarsulk.pl"
 #define HOST_IP_ADDR "192.168.0.10"
@@ -97,11 +99,16 @@ static void tcp_client_task(void *pvParameters)
 		{
 			if (GET_MS() - last_send_status >= 2000)
 			{
+					/// get status once per 2s
 				uint16_t fromItem = 0;
 				uint8_t details = 1;
 				uint16_t send_bytes = DeviceItem_GetStatus(&devicesItems, devicesItemsStatus, heatingDevicesComponents,
 						&tx_buffer[0], sizeof(tx_buffer), fromItem, details); // - PACKET_PRE_BYTES - PACKET_POST_BYTES
 
+					/// save history to flash memory
+				; // $$
+
+					/// send status to server
 				int err = send(sock, tx_buffer, send_bytes, 0);
 				last_send_status = GET_MS();
 				if (err < 0)
@@ -109,16 +116,29 @@ static void tcp_client_task(void *pvParameters)
 					LOGE(TAG, "Error occurred during sending: errno %d", errno);
 					break;
 				}
+
+					/// try send history to server if exists
+
+				struct FlashHistoryState flashHistoryState;
+				if (FindHistoryStateInFlash(&flashHistoryState) == FIND_OK)
+				{
+
+				}
+				if (WriteHistoryStateToFlash(&flashHistoryState, item1) == STATUS_OK)
+				{
+
+				}
 			}
 
+				/// receive commands from server
 			ssize_t len = recv(sock, rx_buffer, sizeof(rx_buffer), MSG_DONTWAIT);
-				// Error occurred during receiving
+				/// Error occurred during receiving
 			if (len < 0 && errno != EAGAIN)
 			{
 				LOGE(TAG, "recv failed: errno %d, len %d", errno, len);
 				break;
 			}
-				// Data received
+				/// Data received
 			else if (len > 0)
 			{
 				// LOGI(TAG, "Received %d bytes from %s:", len, host_ip);
@@ -138,6 +158,7 @@ static void tcp_client_task(void *pvParameters)
 			close(sock);
 		}
 	}
+
 	vTaskDelete(NULL);
 }
 

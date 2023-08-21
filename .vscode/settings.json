@@ -1,0 +1,21 @@
+{
+  "files.associations": {
+    "isr_din_cu.h": "c",
+    "*.ipp": "c",
+    "*.tcc": "c",
+    "system_error": "c",
+    "random": "c",
+    "fstream": "c",
+    "istream": "c",
+    "limits": "c",
+    "new": "c",
+    "ostream": "c",
+    "ratio": "c",
+    "stdexcept": "c",
+    "streambuf": "c",
+    "functional": "c",
+    "tcp_server.h": "c",
+    "esp_event.h": "c",
+    "isr_box_temp2.h": "c"
+  }
+}
