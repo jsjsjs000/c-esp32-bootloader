@@ -30,6 +30,7 @@
 #if !defined(BOOTLOADER) && defined(ISR_CU)
 	#include "configuration_cu_control.h"
 	#include "configuration_visual_components.h"
+	#include "history_state.h"
 #endif
 #ifdef ISR_TEMP
 	#include "../lib/ISR_uC_Library/DS18B20.h"
@@ -88,6 +89,7 @@ bool isInitialized = false;
 uint32_t lastWatchdogReset = 0;
 uint64_t ledFastBlink = -1LL;  /// ms
 uint16_t synchronizationDifference = 0; /// ms
+uint8_t sendHistoryStateBuffer[2048];
 
 #ifdef ISR_TEMP
 	int16_t DS18B20Temperatures[ISR_SEGMENTS_COUNT];
@@ -151,6 +153,7 @@ esp_err_t InitilizeConfiguration(void)
 #if !defined(BOOTLOADER) && defined(ISR_CU)
 	InitializeFlashConfigurationCuControl(&flashConfigurationCuControl);
 	InitializeFlashConfigurationVisualComponents(&flashConfigurationVisualComponents);
+	InitializeFlashHistoryState(&flashHistoryState);
 #endif
 
 	if (FindConfigurationInFlash(&flashConfigurationBootloader) != FIND_OK)
@@ -336,6 +339,16 @@ void mainTask(void *arg)
 			VisualComponent_WriteVisualComponentsToFlash(&flashConfigurationVisualComponents);
 			writeVisualControlsTimestamp = 0;
 		}
+
+		// uint16_t fromItem = 0;
+		// uint8_t details = 1;
+		// uint16_t send_bytes = DeviceItem_GetStatus(&devicesItems, devicesItemsStatus, heatingDevicesComponents,
+		// 		sendHistoryStateBuffer, sizeof(sendHistoryStateBuffer), fromItem, details); // - PACKET_PRE_BYTES - PACKET_POST_BYTES
+
+		// 	/// save history state to flash memory
+		// if (WriteHistoryStateToFlash(&flashHistoryState, sendHistoryStateBuffer) == STATUS_OK)
+		// {
+		// }
 #endif
 
 			/// watchdog

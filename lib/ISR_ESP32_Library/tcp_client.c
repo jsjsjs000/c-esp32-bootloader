@@ -15,7 +15,6 @@
 #include "lwip/inet.h"
 #include "lwip/netdb.h"
 #include "device_item.h"
-// #include "flash.h"
 #include "history_state.h"
 
 // #define HOST "jarsulk.pl"
@@ -105,11 +104,8 @@ static void tcp_client_task(void *pvParameters)
 				uint16_t send_bytes = DeviceItem_GetStatus(&devicesItems, devicesItemsStatus, heatingDevicesComponents,
 						&tx_buffer[0], sizeof(tx_buffer), fromItem, details); // - PACKET_PRE_BYTES - PACKET_POST_BYTES
 
-					/// save history to flash memory
-				; // $$
-
 					/// send status to server
-				int err = send(sock, tx_buffer, send_bytes, 0);
+				err = send(sock, tx_buffer, send_bytes, 0);
 				last_send_status = GET_MS();
 				if (err < 0)
 				{
@@ -118,15 +114,8 @@ static void tcp_client_task(void *pvParameters)
 				}
 
 					/// try send history to server if exists
-
-				struct FlashHistoryState flashHistoryState;
 				if (FindHistoryStateInFlash(&flashHistoryState) == FIND_OK)
 				{
-
-				}
-				if (WriteHistoryStateToFlash(&flashHistoryState, item1) == STATUS_OK)
-				{
-
 				}
 			}
 
