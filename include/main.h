@@ -18,9 +18,12 @@
 #define CONFIGURATION_ADAM_KUKUC
 // #define CONFIGURATION_ADAM_KUKUC_TEST
 
-#define WATCHDOG_RESET_TIME	1000
+#define WATCHDOG_RESET_TIME	            1000
+#define WATCHDOG_TASK_INACTIVE_TIME_MS  (60 * 1000)
 
 #define ESP32
+
+#define SEND_HISTORY_STATE_TIME_SPAN_S 30 // $$$ (5 * 60)
 
 #define StatusType esp_err_t
 #define STATUS_OK ESP_OK
@@ -94,7 +97,6 @@ extern struct CommunicationCommandStruct communicationCommand2;
 	extern uint32_t writeVisualControlsTimestamp;
 #endif
 
-extern void Error_Handler(void); // $$
 extern void JumpToProgram_(void);
 extern void ResetDevice(void);
 extern void InitializeLed(void);
@@ -113,9 +115,11 @@ extern void LedTestLoop(void);
 	extern uint16_t TcpServer_AnswerForRequest(int32_t sock, uint8_t* rxBuffer, uint16_t rxBufferLength,
 			uint8_t* txBuffer, uint16_t txBufferLength);
 
-	extern void Command_AnswerGetRelaysStatus(uint32_t address, bool answerOk, uint32_t uptime, uint16_t vin, bool *relays, uint8_t count);
+	extern void Command_AnswerGetRelaysStatus(uint32_t address, bool answerOk, uint32_t uptime, uint16_t vin,
+			bool *relays, uint8_t count);
 	extern void Command_AnswerSetRelaysStatus(uint32_t address, bool answerOk);
-	extern void Command_AnswerGetTemperatures(uint32_t address, bool answerOk, uint32_t uptime, uint16_t vin, uint16_t *temperatures, uint8_t count);
+	extern void Command_AnswerGetTemperatures(uint32_t address, bool answerOk, uint32_t uptime, uint16_t vin,
+			uint16_t *temperatures, uint8_t count);
 #endif
 
 

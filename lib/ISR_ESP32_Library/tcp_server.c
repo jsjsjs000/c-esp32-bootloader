@@ -223,6 +223,8 @@ void tcp_server_task(void *pvParameters)
 					}
 				}
 		}
+
+		DELAY_MS(1);
 	}
 
 CLEAN_UP:

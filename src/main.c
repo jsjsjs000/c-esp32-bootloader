@@ -50,6 +50,7 @@
 #endif
 
 static const uint8_t LogLevel = 0; /// 0 - 2
+static bool rtcInitialized = false;
 
 #if defined(BOOTLOADER) && defined(ISR_CU)
 	static const char *TAG = "ISR-DIN-CU-BOOTLOADER";
@@ -89,7 +90,6 @@ bool isInitialized = false;
 uint32_t lastWatchdogReset = 0;
 uint64_t ledFastBlink = -1LL;  /// ms
 uint16_t synchronizationDifference = 0; /// ms
-uint8_t sendHistoryStateBuffer[2048];
 
 #ifdef ISR_TEMP
 	int16_t DS18B20Temperatures[ISR_SEGMENTS_COUNT];
@@ -100,8 +100,9 @@ uint8_t sendHistoryStateBuffer[2048];
 #endif
 
 #if !defined(BOOTLOADER) && defined(ISR_CU)
-	uint32_t writeCuControlTimestamp = 0;
-	uint32_t writeVisualControlsTimestamp = 0;
+	TickType_t writeCuControlTimestamp = 0;
+	TickType_t writeVisualControlsTimestamp = 0;
+	TickType_t writeHistoryStateTimestamp = 0;
 #endif
 
 void JumpToProgram_(void)
@@ -212,6 +213,12 @@ esp_err_t InitilizeConfiguration(void)
 		EraseFlashVisualComponents();
 		if (WriteConfigurationToFlash(&flashConfigurationVisualComponents) != STATUS_OK)
 			ERROR_HANDLER();
+	}
+
+	if (FindHistoryStateInFlash(&flashHistoryState) != FIND_OK)
+	{
+			/// No coniguration found - initialize it
+		EraseFlashHistoryState();
 	}
 
 	if (LogLevel >= 2)
@@ -340,15 +347,32 @@ void mainTask(void *arg)
 			writeVisualControlsTimestamp = 0;
 		}
 
-		// uint16_t fromItem = 0;
-		// uint8_t details = 1;
-		// uint16_t send_bytes = DeviceItem_GetStatus(&devicesItems, devicesItemsStatus, heatingDevicesComponents,
-		// 		sendHistoryStateBuffer, sizeof(sendHistoryStateBuffer), fromItem, details); // - PACKET_PRE_BYTES - PACKET_POST_BYTES
+			/// generate history state and write to flash memory if sending fail > 60s
+		time_t now;
+		struct tm timeinfo;
+		time(&now);
+		localtime_r(&now, &timeinfo);
+		uint32_t rtcSeconds = (timeinfo.tm_min * 60 + timeinfo.tm_sec) % SEND_HISTORY_STATE_TIME_SPAN_S;
 
-		// 	/// save history state to flash memory
-		// if (WriteHistoryStateToFlash(&flashHistoryState, sendHistoryStateBuffer) == STATUS_OK)
-		// {
-		// }
+		if (RTC_isSetRtc && GET_MS() >= 30 * 1000 && GET_MS() - last_send_status >= 60 * 1000 &&
+				rtcSeconds <= 10 && GET_MS() - writeHistoryStateTimestamp >= 20 * 1000)     /// h:m:00-h:m:10
+		{
+			uint16_t fromItem = 0;
+			uint8_t details = 1;
+			uint8_t sendHistoryStateBuffer[2048];
+			DeviceItem_GetStatus(&devicesItems, devicesItemsStatus, heatingDevicesComponents,
+					sendHistoryStateBuffer, sizeof(sendHistoryStateBuffer), fromItem, details, 0); // - PACKET_PRE_BYTES - PACKET_POST_BYTES
+
+			TickType_t sendHistoryStateBufferTimestamp = RTC_GetLinuxTimestamp();
+			DeviceItem_GetStatus_UpdateTimestamp(sendHistoryStateBuffer, sendHistoryStateBufferTimestamp);
+
+			WriteHistoryStateToFlash(&flashHistoryState, sendHistoryStateBuffer);
+char s[32];
+RTC_GetCurrentDateTimeString(s, sizeof(s));
+LOGI(TAG, "TCP/IP send failed, write history state to flash - %s, cur: %x, notsend: %x", s, flashHistoryState.currentFlashAddress, flashHistoryState.notSendCurrentItemAddress); // $$$
+// LOGI(TAG, "  now: %d, last_send: %d", GET_MS(), last_send_status);
+			writeHistoryStateTimestamp = GET_MS();
+		}
 #endif
 
 			/// watchdog
@@ -358,7 +382,17 @@ void mainTask(void *arg)
 			esp_task_wdt_reset();
 			lastWatchdogReset = GET_MS();
 
+LOGI(TAG, "FindNotSendHistoryState - cur: %x, notsend: %x", flashHistoryState.currentFlashAddress, flashHistoryState.notSendCurrentItemAddress); // $$$
+LOGI(TAG, "rtc set %d, last send %d", RTC_isSetRtc, last_send_status);
+
 #ifdef ISR_CU
+			if (GET_MS() - lastUart1TaskTick >= WATCHDOG_TASK_INACTIVE_TIME_MS ||
+					GET_MS() - lastUart2TaskTick >= WATCHDOG_TASK_INACTIVE_TIME_MS)
+			{
+				LOGI(TAG, "Restart - UART1 or UART2 task watchdog.");
+				ResetDevice();
+			}
+
 			if (LogLevel >= 2)
 			{
 				char tis[32];
@@ -411,6 +445,7 @@ void app_main()
 	// EraseFlashProgram();																	/// debug: reset program flash
 	// EraseFlashCuControl();																/// debug: reset cu control flash
 	// EraseFlashVisualComponents();												/// debug: reset visual components flash
+	// EraseFlashHistoryState();														/// debug: reset history state flash
 
 	ProgramIndicator[0] = 0x57;
 
@@ -482,7 +517,7 @@ void app_main()
 // 	i += 0x1000;
 // }
 
-	xTaskCreate(mainTask, "MAIN_TASK", 4096, NULL, 12, NULL);
+	xTaskCreate(mainTask, "MAIN_TASK", 6144, NULL, 12, NULL);
 }
 
 #ifdef ISR_TEMP
@@ -497,8 +532,6 @@ void Lan8720a_EthEventHandler(void *arg, esp_event_base_t event_base,
 		int32_t event_id, void *event_data)
 {
 }
-
-static bool rtcInitialized = false;
 
 void Lan8720a_GotIpEventHandler(void *arg, esp_event_base_t event_base,
 		int32_t event_id, void *event_data)
@@ -561,7 +594,8 @@ uint16_t TcpServer_AnswerForRequest(int32_t socket, uint8_t* rxBuffer, uint16_t 
 #endif
 
 #if !defined(BOOTLOADER) && defined(ISR_CU)
-void Command_AnswerGetRelaysStatus(uint32_t address, bool answerOk, uint32_t uptime, uint16_t vin, bool *relays, uint8_t count)
+void Command_AnswerGetRelaysStatus(uint32_t address, bool answerOk, uint32_t uptime, uint16_t vin,
+		bool *relays, uint8_t count)
 {
 	if (LogLevel >= 1)
 	{
@@ -607,7 +641,8 @@ void Command_AnswerSetRelaysStatus(uint32_t address, bool answerOk)
 		LOGI("COMMAND", "set rel: %d", (uint8_t)answerOk);
 }
 
-void Command_AnswerGetTemperatures(uint32_t address, bool answerOk, uint32_t uptime, uint16_t vin, uint16_t *temperatures, uint8_t count)
+void Command_AnswerGetTemperatures(uint32_t address, bool answerOk, uint32_t uptime, uint16_t vin,
+		uint16_t *temperatures, uint8_t count)
 {
 	if (LogLevel >= 1)
 	{
@@ -760,6 +795,15 @@ set firmware=%bins_dir%\ISR-BOX-TEMP-2_1.0.bin
 %python% %tool% %tool_params% 0xc0000 %firmware%
 
 	todo:
+		- po restarcie nie wysyła zaległych logów z historii we flashu
+		+ UART tasks watchdog
+		+ Android - źle pokazuje ustawioną temperaturę dla manualnej
+		+ zawiesza się RS485 port 2 - nie wysyła do symulatora po jakimś czasie
+		? masa błędów jeśli tcp client nie może się połączyć do routera - np. reset routera
+
+		+ .NET przy odbiorze TCP skleja odpowiedzi
+		+ z historii nie wysyła linux timestamp - lub nie wpisuje do flasha
+
 		ESPNOW
 			https://github.com/espressif/esp-idf/tree/1067b28707e527f177752741e3aa08b5dc64a4d7/examples/wifi/espnow
 */

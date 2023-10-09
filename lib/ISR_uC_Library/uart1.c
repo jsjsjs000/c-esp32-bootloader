@@ -26,6 +26,7 @@
 // static const char *TAG = "UART1";
 
 static QueueHandle_t uart1Queue;
+TickType_t lastUart1TaskTick = 0;
 struct Communication communication1;
 #if !defined(BOOTLOADER) && defined(ISR_CU)
 	struct CentralUnitScanDevices scanDevices1;
@@ -157,6 +158,7 @@ void Uart1EventTask(void *arg)
 		}
 #endif
 
+		lastUart1TaskTick = GET_MS();
 		DELAY_MS(1);
 	}
 }

@@ -1,0 +1,64 @@
+@startuml
+skinparam componentStyle rectangle
+
+component Old {
+  [Android] as Android1
+  [ISR-DIN] as ISRDIN1
+  Android1 -u-> [ISRDIN1]
+  [www] -r-> [NanoPi]
+  [NanoPi] -r-> [ISRDIN1]
+}
+
+note top of NanoPi
+  InteligentnyDomRelay:
+    loop:
+      g - Get Central Unit Status
+      save history states to MySQL
+
+  InteligentnyDomWebViewer server
+end note
+
+note bottom of Android1
+  get/set configuration
+  get central unit status
+  set/get relays state
+end note
+
+note top of ISRDIN1
+  TCP/IP server
+end note
+
+component New {
+  [ISR-DIN] as ISRDIN2
+  [Android] as Android2
+  [www] as www2
+  [Android2] -r-> [ovh]
+  www2 -u-> [ovh]
+  [ISRDIN2] -l-> [ovh]
+  [ServiceTool] -u-> ISRDIN2
+}
+
+note top of ovh
+  Receive packets from ISR-DIN
+      and store in memory and MySQL
+
+  Recieve requests from Android
+      and send to ISR-DIN
+
+  Web server - current state and
+      history graphs
+end note
+
+note top of ISRDIN2
+  initialize TCP/IP connection to ovh
+    loop:
+      send current state to ovh
+      (A) save history states to Flash memory
+      (B) send/synchronize history states to ovh
+
+  TCP/IP server for ServiceTool
+end note
+
+@enduml
+
+' https://www.plantuml.com/plantuml/png/VLB1RXD13BtlL_X83wkA73cWbbQWI112Kk20SfXkdCsei-DbnflLKl7lsDePD4eefx6UdptFVhw9R08FdQlYa_Mz2QQ3XhgUF7hUykGG0ZPiVEkmglvcuBFRmtC5yEFMxmFP_GvCX1I_LdovtTJtovNY8B642cS6r4FzLaXpOgS5upZke0uAhuodjLKqXvee-R-hoXCZCFL01vXPmbzwHcTRKUYdU-eswCpqHd00HzJF4K0BDNn0XZlX1UFWgxSCMpOynCI8veHmj94fJ10bWn6OuDEq_VAnklpdEpv-ipXYW8ZXXA52lmSLc6G-4ZDrghHOKOjy7P6X8N-mxH0CM_AAAvQK3QeiPcLHAZGRTAmuwog-AZPIhFpXRdszN5y8AxnSuGZF__PiyOB5Y-oOOlAMl4LsYqv7zL3JudU191-Lw4fuAnfjWmz4RZTN9EAvtr8W_0qsQCMdtZHFo14EWJf8CoGVZOoh9Y9O3nrsQgTYsKZjOL5w1FmvO4nDyfHb4rqSKswlfM9wsYhKq0mXe9-zGgd8jVc6sc3wO_olMRf3AtvRu-mlpBurv3qsUXh2ri4lhbcbdVrVC05UtLwzTC_ldOd7j9VCVdS5sl4wJhuv1lAgvR9IsvyV5nmeGE5XCUsDX4Fd_W00

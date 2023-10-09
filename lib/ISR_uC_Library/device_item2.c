@@ -449,10 +449,13 @@ void VisualComponent_PrintHeatingVisualComponentControl(uint32_t address, uint8_
 	else
 		LOGI(TAG, "  mode: undefined");
 
-	LOGI(TAG, "  period1PnPtFrom: %d:%02d - %.2f C",
-			VisualComponent_TimeByteToHour(componentControl->periodPnPtFrom[0]),
-			VisualComponent_TimeByteToMinute(componentControl->periodPnPtFrom[0]),
-			componentControl->periodPnPtTemperature[0]);
+	if (componentControl->periodsPnPtCount == 1)
+		LOGI(TAG, "  periodPnPt: %.2f C", componentControl->periodPnPtTemperature[0]);
+	else
+		LOGI(TAG, "  period1PnPtFrom: %d:%02d - %.2f C",
+				VisualComponent_TimeByteToHour(componentControl->periodPnPtFrom[0]),
+				VisualComponent_TimeByteToMinute(componentControl->periodPnPtFrom[0]),
+				componentControl->periodPnPtTemperature[0]);
 	if (componentControl->periodsPnPtCount >= 2)
 		LOGI(TAG, "  period2PnPtFrom: %d:%02d - %.2f C",
 				VisualComponent_TimeByteToHour(componentControl->periodPnPtFrom[1]),
@@ -469,10 +472,13 @@ void VisualComponent_PrintHeatingVisualComponentControl(uint32_t address, uint8_
 				VisualComponent_TimeByteToMinute(componentControl->periodPnPtFrom[3]),
 			componentControl->periodPnPtTemperature[3]);
 
-	LOGI(TAG, "  period1SaFrom: %d:%02d - %.2f C",
-			VisualComponent_TimeByteToHour(componentControl->periodSaFrom[0]),
-			VisualComponent_TimeByteToMinute(componentControl->periodSaFrom[0]),
-			componentControl->periodSaTemperature[0]);
+	if (componentControl->periodsSaCount == 1)
+		LOGI(TAG, "  periodSa: %.2f C", componentControl->periodSaTemperature[0]);
+	else
+		LOGI(TAG, "  period1SaFrom: %d:%02d - %.2f C",
+				VisualComponent_TimeByteToHour(componentControl->periodSaFrom[0]),
+				VisualComponent_TimeByteToMinute(componentControl->periodSaFrom[0]),
+				componentControl->periodSaTemperature[0]);
 	if (componentControl->periodsSaCount >= 2)
 		LOGI(TAG, "  period2SaFrom: %d:%02d - %.2f C",
 				VisualComponent_TimeByteToHour(componentControl->periodSaFrom[1]),
@@ -489,10 +495,13 @@ void VisualComponent_PrintHeatingVisualComponentControl(uint32_t address, uint8_
 				VisualComponent_TimeByteToMinute(componentControl->periodSaFrom[3]),
 			componentControl->periodSaTemperature[3]);
 
-	LOGI(TAG, "  period1SuFrom: %d:%02d - %.2f C",
-			VisualComponent_TimeByteToHour(componentControl->periodSuFrom[0]),
-			VisualComponent_TimeByteToMinute(componentControl->periodSuFrom[0]),
-			componentControl->periodSuTemperature[0]);
+	if (componentControl->periodsSuCount == 1)
+		LOGI(TAG, "  periodSu: %.2f C", componentControl->periodSuTemperature[0]);
+	else
+		LOGI(TAG, "  period1SuFrom: %d:%02d - %.2f C",
+				VisualComponent_TimeByteToHour(componentControl->periodSuFrom[0]),
+				VisualComponent_TimeByteToMinute(componentControl->periodSuFrom[0]),
+				componentControl->periodSuTemperature[0]);
 	if (componentControl->periodsSuCount >= 2)
 		LOGI(TAG, "  period2SuFrom: %d:%02d - %.2f C",
 				VisualComponent_TimeByteToHour(componentControl->periodSuFrom[1]),

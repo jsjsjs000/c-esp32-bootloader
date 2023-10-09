@@ -71,5 +71,6 @@ extern bool DeviceItem_LoadControlFromFlash(struct FlashConfiguration *flashCfg)
 extern bool DeviceItem_WriteControlToFlash(struct FlashConfiguration *flashCfg);
 extern uint16_t DeviceItem_GetStatus(struct DeviceItem *devicesItems, struct DeviceItemStatus *devicesItemsStatus,
 		struct HeatingVisualComponent *heatingComponents,
-		uint8_t *outBytes, uint16_t maxOutBytes, uint16_t fromItem, uint8_t details);
+		uint8_t *outBytes, uint16_t maxOutBytes, uint16_t fromItem, uint8_t details, uint32_t timestamp);
+extern void DeviceItem_GetStatus_UpdateTimestamp(uint8_t *buffer, uint32_t timestamp);
 #endif

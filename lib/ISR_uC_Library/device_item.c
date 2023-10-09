@@ -355,13 +355,19 @@ bool DeviceItem_WriteControlToFlash(struct FlashConfiguration *flashCfg)
 
 uint16_t DeviceItem_GetStatus(struct DeviceItem *devicesItems, struct DeviceItemStatus *devicesItemsStatus,
 		struct HeatingVisualComponent *heatingComponents,
-		uint8_t *outBytes, uint16_t maxOutBytes, uint16_t fromItem, uint8_t details)
+		uint8_t *outBytes, uint16_t maxOutBytes, uint16_t fromItem, uint8_t details, uint32_t timestamp)
 {
 	uint16_t o = 0;
 	struct DeviceItem *deviceItem;
 	devicesItemsStatus += fromItem;
 
 	uint8_t outItemsCount = 0;
+
+	outBytes[o++] = UINT32_3BYTE(timestamp);
+	outBytes[o++] = UINT32_2BYTE(timestamp);
+	outBytes[o++] = UINT32_1BYTE(timestamp);
+	outBytes[o++] = UINT32_0BYTE(timestamp);
+
 	outBytes[o++] = outItemsCount;
 	outBytes[o++] = UINT32_1BYTE(devicesItems->devicesItemsCount + heatingDevicesComponentsCount);
 	outBytes[o++] = UINT32_0BYTE(devicesItems->devicesItemsCount + heatingDevicesComponentsCount);
@@ -474,7 +480,16 @@ uint16_t DeviceItem_GetStatus(struct DeviceItem *devicesItems, struct DeviceItem
 			outItemsCount++;
 		}
 
-	outBytes[0] = outItemsCount;
+	outBytes[4] = outItemsCount;
 	return o;
+}
+
+void DeviceItem_GetStatus_UpdateTimestamp(uint8_t *buffer, uint32_t timestamp)
+{
+	uint16_t o = 0;
+	buffer[o++] = UINT32_3BYTE(timestamp);
+	buffer[o++] = UINT32_2BYTE(timestamp);
+	buffer[o++] = UINT32_1BYTE(timestamp);
+	buffer[o++] = UINT32_0BYTE(timestamp);
 }
 #endif

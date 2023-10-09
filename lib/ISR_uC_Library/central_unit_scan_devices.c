@@ -87,6 +87,7 @@ float CentralUnitScanDevices_GetSettingTemperature(struct HeatingVisualComponent
 	localtime_r(&now, &timeinfo);
 	uint8_t rtcHM = timeinfo.tm_hour * 10 + timeinfo.tm_min / 10;
 
+		/// previous day, last hour ?
 	float initialTemperature = CentralUnitScanDevices_GetSettingTemperatureForTime(heatingComponentControl,
 			(timeinfo.tm_wday - 1 + 7) % 7, 24 * 10, 0);
 	return CentralUnitScanDevices_GetSettingTemperatureForTime(heatingComponentControl,

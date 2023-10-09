@@ -38,6 +38,11 @@ void InitializeFlashHistoryState(struct FlashHistoryState *flashCfg)
 	// flashCfg->areNotSendHistoryItems = false;
 }
 
+StatusType EraseFlashHistoryState(void)
+{
+	return EraseFlashRegion(FLASH_HISTORY_STATE_FLASH_ADDRESS, FLASH_PAGE_SIZE);
+}
+
 uint16_t GetHistoryStateItemSize(struct FlashHistoryState *flashCfg)
 {
 	return 1 + flashCfg->headerExtraBytes + flashCfg->configurationSize + flashCfg->footerExtraBytes;

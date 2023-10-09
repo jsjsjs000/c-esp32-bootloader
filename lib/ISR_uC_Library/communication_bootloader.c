@@ -71,7 +71,7 @@ uint16_t ExecuteCommunicationCommand_Bootloader(struct Communication* communicat
 #endif
 #if defined(WATCHDOG) && (defined(STM32F0) || defined(STM32F4))
 			if (HAL_IWDG_Refresh(&hiwdg) != HAL_OK)
-				Error_Handler();
+				ERROR_HANDLER();
 #endif
 		}
 		communication->commandStatus = status;

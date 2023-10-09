@@ -40,7 +40,7 @@ void RTC_ConvertToSystemTM(struct tm *timeinfo, struct tm *tiout)
 	tiout->tm_hour = timeinfo->tm_hour;
 	tiout->tm_min = timeinfo->tm_min;
 	tiout->tm_sec = timeinfo->tm_sec;
-	tiout->tm_isdst = 0; // $$
+	tiout->tm_isdst = -1;
 }
 
 void RTC_ConvertFromSystemTM(struct tm *timeinfo, struct tm *tiout)
@@ -52,7 +52,7 @@ void RTC_ConvertFromSystemTM(struct tm *timeinfo, struct tm *tiout)
 	tiout->tm_hour = timeinfo->tm_hour;
 	tiout->tm_min = timeinfo->tm_min;
 	tiout->tm_sec = timeinfo->tm_sec;
-	tiout->tm_isdst = 0; // $$
+	tiout->tm_isdst = -1;
 }
 
 void RTC_SetSystemTime(struct tm *timeinfo, uint32_t usec)
@@ -76,6 +76,14 @@ void RTC_GetCurrentDateTimeString(char* s, uint8_t sLength)
 	localtime_r(&now, &timeinfo);
 		// https://www.cplusplus.com/reference/ctime/strftime
 	strftime(s, sLength, "%Y-%m-%d %a %H:%M:%S %Z", &timeinfo);
+}
+
+uint32_t RTC_GetLinuxTimestamp(void)
+{
+	time_t now;
+	time(&now);
+	localtime(&now);
+	return (uint32_t)now;
 }
 
 void RTC_Initialize(void)

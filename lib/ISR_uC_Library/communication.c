@@ -434,7 +434,7 @@ uint16_t ReceiveForRequest(struct Communication *communication, uint16_t receive
 		uint8_t details = rxBuffer_[3];
 		txBuffer_[j++] = rxBuffer_[0];
 		j += DeviceItem_GetStatus(&devicesItems, devicesItemsStatus, heatingDevicesComponents,
-				&txBuffer_[j], 256 - PACKET_PRE_BYTES - PACKET_POST_BYTES, fromItem, details);
+				&txBuffer_[j], 256 - PACKET_PRE_BYTES - PACKET_POST_BYTES, fromItem, details, 0);
 		bytesToSend = j;
 	}
 

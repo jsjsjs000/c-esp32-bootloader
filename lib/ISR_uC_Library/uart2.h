@@ -17,6 +17,7 @@
 #define UART2_PORT_NUM      1
 #define UART2_BAUD_RATE     115200
 
+extern TickType_t lastUart2TaskTick;
 extern struct Communication communication2;
 
 extern void InitializeUart2(void);

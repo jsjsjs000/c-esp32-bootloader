@@ -9,6 +9,7 @@
 #define UART1_PORT_NUM      0
 #define UART1_BAUD_RATE     115200
 
+extern TickType_t lastUart1TaskTick;
 extern struct Communication communication1;
 
 extern void InitializeUart1(void);

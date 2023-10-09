@@ -19,7 +19,7 @@
 
 #define FLASH_HISTORY_STATE_FLASH_ADDRESS						0x380000
 #define FLASH_HISTORY_STATE_FLASH_SIZE							0x78000		/// 120 * 4KB
-#define FLASH_HISTORY_STATE_ITEM_SIZE								369
+#define FLASH_HISTORY_STATE_ITEM_SIZE								373
 // #define FLASH_HISTORY_STATE_ITEM_SIZE								384       /// round up to 24*16=384
 #define FLASH_HISTORY_STATE_HEADER_EXTRA_BYTES			1					/// is history state send do server
 #define FLASH_HISTORY_STATE_FOOTER_EXTRA_BYTES			0					/// bytes count at end
@@ -40,6 +40,7 @@ struct FlashHistoryState
 extern struct FlashHistoryState flashHistoryState;
 
 extern void InitializeFlashHistoryState(struct FlashHistoryState *flashCfg);
+extern StatusType EraseFlashHistoryState(void);
 extern uint16_t GetHistoryStateItemSize(struct FlashHistoryState *flashCfg);
 extern StatusType WriteHistoryStateToFlash(struct FlashHistoryState *flashCfg, uint8_t item[]);
 extern FlashFindStatus FindHistoryStateInFlash(struct FlashHistoryState *flashCfg);

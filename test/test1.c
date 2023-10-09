@@ -42,7 +42,7 @@ void test_a(void)
 	uint16_t maxOutBytes = sizeof(txBuffer);
 	bool details = true;
 	uint16_t bytes = DeviceItem_GetStatus(&devicesItems, devicesItemsStatus, heatingDevicesComponents,
-			txBuffer, maxOutBytes, fromItem, details);
+			txBuffer, maxOutBytes, fromItem, details, 0);
 	LOGI("MEMORY", "bytes %d", bytes);
 	PrintMemory("MEMORY", txBuffer, 0, 384);
 
